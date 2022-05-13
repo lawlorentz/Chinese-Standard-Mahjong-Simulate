@@ -2,8 +2,9 @@
 ## Usage
 ```bash
 python preprocess.py
-python supervised.py
 python data_augment.py
+python supervised.py
+
 ```
 `preprocess.py` generates datasets (90k .npz files)
 
