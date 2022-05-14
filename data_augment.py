@@ -53,7 +53,7 @@ def data_augment(index):
         for j in range(9):
             if j == 4:
                 continue
-            obs_2[:, :, :, j] = obs_1[:, :, :, 8-j]
+            obs_2[:, :, 0:3, j] = obs_1[:, :, 0:3, 8-j]
         obs_augment.append(obs_1)
         obs_augment.append(obs_2)
         # mask
