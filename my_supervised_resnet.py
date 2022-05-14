@@ -1,29 +1,33 @@
 from my_dataset import MahjongGBDataset,DataLoaderX
-# from my_dataset import MahjongGBDataset
-from torch.utils.data import DataLoader
-from model import CNNModel
+# from torch.utils.data import DataLoader
+import model_test
 import torch.nn.functional as F
 import torch
+import time
+import os
 
 if __name__ == '__main__':
     logdir = 'log/'
+    resnet_depth=34
+    timestamp=int(time.time())
+    os.mkdir(logdir + f'checkpoint_{resnet_depth}_{timestamp}')
     
     # Load dataset
     splitRatio = 0.9
     batchSize = 1024
-    trainDataset = MahjongGBDataset(0, splitRatio, True)
+    trainDataset = MahjongGBDataset(0, splitRatio, False)
     validateDataset = MahjongGBDataset(splitRatio, 1, False)
-    loader = DataLoaderX(dataset = trainDataset, batch_size = batchSize, shuffle = False)
+    loader = DataLoaderX(dataset = trainDataset, batch_size = batchSize, shuffle = True)
     vloader = DataLoaderX(dataset = validateDataset, batch_size = batchSize, shuffle = False)
     
     # Load model
-    model = CNNModel().to('cuda')
+    model = model_test.resnet34(True, 0.5, (147,235)).to('cuda')
     optimizer = torch.optim.Adam(model.parameters(), lr = 5e-4)
     
     # Train and validate
     for e in range(1000):
         print('Epoch', e)
-        torch.save(model.state_dict(), logdir + 'checkpoint/%d.pkl' % e)
+        torch.save(model.state_dict(), logdir + f'checkpoint_{resnet_depth}_{timestamp}/{e}.pkl')
         for i, d in enumerate(loader):
             input_dict = {'is_training': True, 'obs': {'observation': d[0].cuda(), 'action_mask': d[1].cuda()}}
             logits = model(input_dict)
