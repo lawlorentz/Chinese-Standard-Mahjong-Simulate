@@ -1,5 +1,5 @@
 from my_dataset import MahjongGBDataset,DataLoaderX
-# from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader
 import model_test
 import torch.nn.functional as F
 import torch
@@ -7,7 +7,8 @@ import time
 import os
 
 if __name__ == '__main__':
-    logdir = 'code/log/'
+    # 集群上跑用这个 logdir = '/code/log/'
+    logdir = '/code/log/' 
     resnet_depth=34
     timestamp=int(time.time())
     os.mkdir(logdir + f'checkpoint_{resnet_depth}_{timestamp}')
@@ -16,10 +17,16 @@ if __name__ == '__main__':
     splitRatio = 0.9
     batchSize = 1024
     trainDataset = MahjongGBDataset(0, splitRatio, True)
-    validateDataset = MahjongGBDataset(splitRatio, 1, False)
     loader = DataLoaderX(dataset = trainDataset, batch_size = batchSize, shuffle = False)
+    validateDataset = MahjongGBDataset(splitRatio, 1, False)
     vloader = DataLoaderX(dataset = validateDataset, batch_size = batchSize, shuffle = False)
     
+    # debug
+    # for i in range(len(validateDataset)):
+    #     a=validateDataset[i]
+    #     print(i)
+        
+
     # Load model
     model = model_test.resnet34(True, 0.5, (147,235)).to('cuda')
     optimizer = torch.optim.Adam(model.parameters(), lr = 5e-4)

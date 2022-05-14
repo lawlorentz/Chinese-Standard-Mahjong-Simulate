@@ -65,17 +65,17 @@ class MahjongGBDataset(Dataset):
         sample_id = index - self.match_samples[match_id]
         if self.match_to_cache[match_id] == -1:
             if self.augment == False:
-                d = np.load('data/%d.npz' % (match_id))
+                d = np.load('data/%d.npz' % (self.begin+match_id))
             else:
                 # 只保存2048个%d_augmented.npz，要添加就得先删除一个
-                if not os.path.exists('data/%d_augmented.npz' % (match_id)):
+                if not os.path.exists('data/%d_augmented.npz' % (self.begin+match_id)):
                     if len(self.augmented_matchs) >= 2048:
                         need_del = self.augmented_matchs[0]
                         self.augmented_matchs.pop(0)
                         safe_del('data/%d_augmented.npz' % (need_del))
                     data_augment(match_id)
-                    self.augmented_matchs.append(match_id)
-                d = np.load('data/%d_augmented.npz' % (match_id))
+                    self.augmented_matchs.append(self.begin+match_id)
+                d = np.load('data/%d_augmented.npz' % (self.begin+match_id))
             if self.is_fulled == False:
                 self.cache['obs'].append(d['obs'])
                 self.cache['mask'].append(d['mask'])
