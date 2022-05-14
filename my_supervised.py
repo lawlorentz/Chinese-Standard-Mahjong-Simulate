@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # Train and validate
     for e in range(1000):
         print('Epoch', e)
-        torch.save(model.state_dict(), logdir + 'checkpoint/%d.pkl' % e)
+        
         for i, d in enumerate(loader):
             input_dict = {'is_training': True, 'obs': {'observation': d[0].cuda(), 'action_mask': d[1].cuda()}}
             logits = model(input_dict)
@@ -43,3 +43,5 @@ if __name__ == '__main__':
                 correct += torch.eq(pred, d[2].cuda()).sum().item()
         acc = correct / len(validateDataset)
         print('Epoch', e + 1, 'Validate acc:', acc)
+        torch.save(model.state_dict(), logdir + 'checkpoint/%d.pkl' % e)
+        # print('model saved')

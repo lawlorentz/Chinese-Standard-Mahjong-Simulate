@@ -7,7 +7,7 @@ import time
 import os
 
 if __name__ == '__main__':
-    logdir = 'log/'
+    logdir = 'code/log/'
     resnet_depth=34
     timestamp=int(time.time())
     os.mkdir(logdir + f'checkpoint_{resnet_depth}_{timestamp}')
@@ -15,9 +15,9 @@ if __name__ == '__main__':
     # Load dataset
     splitRatio = 0.9
     batchSize = 1024
-    trainDataset = MahjongGBDataset(0, splitRatio, False)
+    trainDataset = MahjongGBDataset(0, splitRatio, True)
     validateDataset = MahjongGBDataset(splitRatio, 1, False)
-    loader = DataLoaderX(dataset = trainDataset, batch_size = batchSize, shuffle = True)
+    loader = DataLoaderX(dataset = trainDataset, batch_size = batchSize, shuffle = False)
     vloader = DataLoaderX(dataset = validateDataset, batch_size = batchSize, shuffle = False)
     
     # Load model
@@ -25,9 +25,9 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr = 5e-4)
     
     # Train and validate
-    for e in range(1000):
+    for e in range(10):
         print('Epoch', e)
-        torch.save(model.state_dict(), logdir + f'checkpoint_{resnet_depth}_{timestamp}/{e}.pkl')
+        
         for i, d in enumerate(loader):
             input_dict = {'is_training': True, 'obs': {'observation': d[0].cuda(), 'action_mask': d[1].cuda()}}
             logits = model(input_dict)
@@ -47,3 +47,5 @@ if __name__ == '__main__':
                 correct += torch.eq(pred, d[2].cuda()).sum().item()
         acc = correct / len(validateDataset)
         print('Epoch', e + 1, 'Validate acc:', acc)
+        torch.save(model.state_dict(), logdir + f'checkpoint_{resnet_depth}_{timestamp}/{e}.pkl')
+        print(logdir + f'checkpoint_{resnet_depth}_{timestamp}/{e}.pkl saved')
