@@ -5,6 +5,16 @@ from bisect import bisect_right
 
 from torch.utils.data import DataLoader
 from prefetch_generator import BackgroundGenerator
+from data_augment import data_augment
+
+import os
+
+
+def safe_del(path):
+    if os.path.exists(path):
+        os.remove(path)
+    else:
+        print("The file does not exist")
 
 
 class DataLoaderX(DataLoader):
@@ -21,6 +31,8 @@ class MahjongGBDataset(Dataset):
             self.match_samples = json.load(f)
         if augment == True:
             self.match_samples = [i*12 for i in self.match_samples]
+            self.augmented_matchs = []
+
         self.total_matches = len(self.match_samples)
         self.total_samples = sum(self.match_samples)
         self.begin = int(begin * self.total_matches)
@@ -41,6 +53,7 @@ class MahjongGBDataset(Dataset):
             a = self.match_samples[i]
             self.match_samples[i] = t
             t += a
+
         pass
 
     def __len__(self):
@@ -53,6 +66,14 @@ class MahjongGBDataset(Dataset):
             if self.augment == False:
                 d = np.load('data/%d.npz' % (match_id))
             else:
+                # 只保存2048个%d_augmented.npz，要添加就得先删除一个
+                if not os.path.exists('data/%d_augmented.npz' % (match_id)):
+                    if len(self.augmented_matchs) >= 2048:
+                        need_del = self.augmented_matchs[0]
+                        self.augmented_matchs = self.augmented_matchs.pop(0)
+                        safe_del('data/%d_augmented.npz' % (need_del))
+                    data_augment(match_id)
+                    self.augmented_matchs.append(match_id)
                 d = np.load('data/%d_augmented.npz' % (match_id))
             if self.is_fulled == False:
                 self.cache['obs'].append(d['obs'])

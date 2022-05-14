@@ -26,7 +26,7 @@ cache = {}
 
 
 
-def load_data(index):
+def data_augment(index):
     d = np.load('data/%d.npz' % index)
     cache = {'obs': d['obs'], 'mask': d['mask'], 'act': d['act']}
     for k in d:
@@ -191,8 +191,8 @@ def load_data(index):
              obs=obs_,
              mask=mask_,
              act=act_)
-    print('data %d saved' % index)
+    print('data %d augmented and saved' % index)
 
 
 for i in range(total_matches):
-    load_data(i)
+    data_augment(i)
