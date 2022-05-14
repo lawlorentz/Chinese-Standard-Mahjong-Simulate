@@ -1,5 +1,6 @@
 from my_dataset import MahjongGBDataset,DataLoaderX
-# from torch.utils.data import DataLoader
+from my_dataset import MahjongGBDataset
+from torch.utils.data import DataLoader
 from model import CNNModel
 import torch.nn.functional as F
 import torch
@@ -12,8 +13,8 @@ if __name__ == '__main__':
     batchSize = 1024
     trainDataset = MahjongGBDataset(0, splitRatio, True)
     validateDataset = MahjongGBDataset(splitRatio, 1, False)
-    loader = DataLoaderX(dataset = trainDataset, batch_size = batchSize, shuffle = True)
-    vloader = DataLoaderX(dataset = validateDataset, batch_size = batchSize, shuffle = False)
+    loader = DataLoader(dataset = trainDataset, batch_size = batchSize, shuffle = True)
+    vloader = DataLoader(dataset = validateDataset, batch_size = batchSize, shuffle = False)
     
     # Load model
     model = CNNModel().to('cuda')

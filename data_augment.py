@@ -1,10 +1,10 @@
 # 饼万条互换 19,28,37,46互换
 
 import numpy as np
-import json
-with open('data/count.json') as f:
-    match_samples = json.load(f)
-total_matches = len(match_samples)
+# import json
+# with open('data/count.json') as f:
+#     match_samples = json.load(f)
+# total_matches = len(match_samples)
 obs_augment_index = [[1, 2, 3], [1, 3, 2], [
     2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]
 OFFSET_ACT = {
@@ -22,7 +22,6 @@ OFFSET_ACT = {
     'BuGang': 201
 }
 
-cache = {}
 
 
 
@@ -194,5 +193,5 @@ def data_augment(index):
     print('data %d augmented and saved' % index)
 
 
-for i in range(total_matches):
-    data_augment(i)
+# for i in range(total_matches):
+#     data_augment(i)
