@@ -13,6 +13,7 @@ import os
 def safe_del(path):
     if os.path.exists(path):
         os.remove(path)
+        # print("%s deleted" % path)
     else:
         print("The file does not exist")
 
@@ -70,7 +71,7 @@ class MahjongGBDataset(Dataset):
                 if not os.path.exists('data/%d_augmented.npz' % (match_id)):
                     if len(self.augmented_matchs) >= 2048:
                         need_del = self.augmented_matchs[0]
-                        self.augmented_matchs = self.augmented_matchs.pop(0)
+                        self.augmented_matchs.pop(0)
                         safe_del('data/%d_augmented.npz' % (need_del))
                     data_augment(match_id)
                     self.augmented_matchs.append(match_id)

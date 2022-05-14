@@ -190,7 +190,7 @@ def data_augment(index):
              obs=obs_,
              mask=mask_,
              act=act_)
-    print('data %d augmented and saved' % index)
+    # print('data %d augmented and saved' % index)
 
 
 # for i in range(total_matches):

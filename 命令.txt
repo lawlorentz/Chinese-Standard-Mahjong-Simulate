@@ -1,0 +1,3 @@
+cp -r /code/Chinese-Standard-Mahjong-Simulate-master/* /workspace && cp /dataset/* /workspace/data && cd /workspace
+python my_preprocess.py
+pip install prefetch_generator

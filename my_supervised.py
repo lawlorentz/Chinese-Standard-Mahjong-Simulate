@@ -13,7 +13,7 @@ if __name__ == '__main__':
     batchSize = 1024
     trainDataset = MahjongGBDataset(0, splitRatio, True)
     validateDataset = MahjongGBDataset(splitRatio, 1, False)
-    loader = DataLoader(dataset = trainDataset, batch_size = batchSize, shuffle = True)
+    loader = DataLoader(dataset = trainDataset, batch_size = batchSize, shuffle = False)
     vloader = DataLoader(dataset = validateDataset, batch_size = batchSize, shuffle = False)
     
     # Load model
