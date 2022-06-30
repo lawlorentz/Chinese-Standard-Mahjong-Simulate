@@ -2,7 +2,7 @@
 from feature import FeatureAgent
 
 # Model part
-from model import CNNModel
+import model_test
 
 # Botzone interaction
 import numpy as np
@@ -17,8 +17,8 @@ def obs2response(model, obs):
 import sys
 
 if __name__ == '__main__':
-    model = CNNModel()
-    data_dir = '/data/999.pkl'
+    model = model_test.resnet34(True,0,(38,235))
+    data_dir = '/data/0.pkl'
     model.load_state_dict(torch.load(data_dir, map_location = torch.device('cpu')))
     input() # 1
     while True:

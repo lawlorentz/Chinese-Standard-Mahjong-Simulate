@@ -1,4 +1,0 @@
-cp -r /code/submit/* /workspace && cp /dataset/* /workspace/data && cd /workspace
-python my_preprocess.py
-pip install prefetch_generator
-python my_supervised_resnet.py

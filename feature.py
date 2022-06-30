@@ -1,3 +1,4 @@
+from email.policy import default
 from agent import MahjongGBAgent
 from collections import defaultdict
 import numpy as np
@@ -9,7 +10,6 @@ except:
     raise
 
 class FeatureAgent(MahjongGBAgent):
-    
     '''
     observation: 6*4*9
         (men+quan+hand4)*4*9
@@ -17,14 +17,19 @@ class FeatureAgent(MahjongGBAgent):
         pass1+hu1+discard34+chi63(3*7*3)+peng34+gang34+angang34+bugang34
     '''
     
-    OBS_SIZE = 6
+    OBS_SIZE = 38
     ACT_SIZE = 235
     
     OFFSET_OBS = {
         'SEAT_WIND' : 0,
         'PREVALENT_WIND' : 1,
-        'HAND' : 2
+        'HAND' : 2,
+        # 每个位置的弃牌
+        'DISCARD' : 6,
+        # 每个位置的副露
+        'HALF_FLUSH' : 22
     }
+    # 给每种动作编了号
     OFFSET_ACT = {
         'Pass' : 0,
         'Hu' : 1,
@@ -45,14 +50,19 @@ class FeatureAgent(MahjongGBAgent):
     OFFSET_TILE = {c : i for i, c in enumerate(TILE_LIST)}
     
     def __init__(self, seatWind):
+        # 门风
         self.seatWind = seatWind
+        # 副露
         self.packs = [[] for i in range(4)]
         self.history = [[] for i in range(4)]
+        # 牌墙
         self.tileWall = [21] * 4
+        # 打出来的各种牌有多少张：把牌的名字映射到打出的张数
         self.shownTiles = defaultdict(int)
         self.wallLast = False
         self.isAboutKong = False
         self.obs = np.zeros((self.OBS_SIZE, 36))
+        # 什么风就把对应的行置为1
         self.obs[self.OFFSET_OBS['SEAT_WIND']][self.OFFSET_TILE['F%d' % (self.seatWind + 1)]] = 1
     
     '''
@@ -82,6 +92,7 @@ class FeatureAgent(MahjongGBAgent):
             self.prevalentWind = int(t[1])
             self.obs[self.OFFSET_OBS['PREVALENT_WIND']][self.OFFSET_TILE['F%d' % (self.prevalentWind + 1)]] = 1
             return
+        # 初始手牌
         if t[0] == 'Deal':
             self.hand = t[1:]
             self._hand_embedding_update()
@@ -110,9 +121,12 @@ class FeatureAgent(MahjongGBAgent):
                         self.valid.append(self.OFFSET_ACT['BuGang'] + self.OFFSET_TILE[tile])
             return self._obs()
         # Player N Invalid/Hu/Draw/Play/Chi/Peng/Gang/AnGang/BuGang XX
+        # p是和自己所在门风的相对位置
         p = (int(t[1]) + 4 - self.seatWind) % 4
         if t[2] == 'Draw':
+            # 牌墙剩余牌的张数减少
             self.tileWall[p] -= 1
+            # 如果下家的牌墙为空，则wallLast为真
             self.wallLast = self.tileWall[(p + 1) % 4] == 0
             return
         if t[2] == 'Invalid':
@@ -124,11 +138,15 @@ class FeatureAgent(MahjongGBAgent):
         if t[2] == 'Play':
             self.tileFrom = p
             self.curTile = t[3]
+            # 某个人打出来一张牌，那么这张牌暴露出来的数量++
             self.shownTiles[self.curTile] += 1
             self.history[p].append(self.curTile)
+            # 如果是自己打出来的牌
             if p == 0:
                 self.hand.remove(self.curTile)
                 self._hand_embedding_update()
+                ################################################################
+                
                 return
             else:
                 # Available: Hu/Gang/Peng/Chi/Pass
@@ -158,6 +176,7 @@ class FeatureAgent(MahjongGBAgent):
             color = tile[0]
             num = int(tile[1])
             self.packs[p].append(('CHI', tile, int(self.curTile[1]) - num + 2))
+            # 牌河里的
             self.shownTiles[self.curTile] -= 1
             for i in range(-1, 2):
                 self.shownTiles[color + str(num + i)] += 1
@@ -251,6 +270,7 @@ class FeatureAgent(MahjongGBAgent):
                 return self._obs()
         raise NotImplementedError('Unknown request %s!' % request)
     
+    # 将数字表示的动作转为输出
     '''
     Pass
     Hu
@@ -279,6 +299,7 @@ class FeatureAgent(MahjongGBAgent):
             return 'Gang ' + self.TILE_LIST[action - self.OFFSET_ACT['AnGang']]
         return 'BuGang ' + self.TILE_LIST[action - self.OFFSET_ACT['BuGang']]
     
+    # 将动作转为数字表示
     '''
     Pass
     Hu
@@ -301,6 +322,7 @@ class FeatureAgent(MahjongGBAgent):
         if t[0] == 'BuGang': return self.OFFSET_ACT['BuGang'] + self.OFFSET_TILE[t[1]]
         return self.OFFSET_ACT['Pass']
     
+    # 返回当前观测到的状态：观测、动作mask
     def _obs(self):
         mask = np.zeros(self.ACT_SIZE)
         for a in self.valid:
@@ -310,14 +332,42 @@ class FeatureAgent(MahjongGBAgent):
             'action_mask': mask
         }
     
+    # 更新手牌编码：按照张数编码
     def _hand_embedding_update(self):
+        # 初始化手牌的4个通道
         self.obs[self.OFFSET_OBS['HAND'] : ] = 0
         d = defaultdict(int)
         for tile in self.hand:
             d[tile] += 1
         for tile in d:
             self.obs[self.OFFSET_OBS['HAND'] : self.OFFSET_OBS['HAND'] + d[tile], self.OFFSET_TILE[tile]] = 1
+        
+        ################################
+        # 根据history改观测
+        for i, tile_list in enumerate(self.history):
+            d = defaultdict(int)
+            for tile in tile_list:
+                d[tile] += 1
+            for tile in d:
+                self.obs[self.OFFSET_OBS['DISCARD'] + 4*i : self.OFFSET_OBS['DISCARD'] + 4*i + d[tile], self.OFFSET_TILE[tile]] = 1
+        ################################
+        packs = self.packs
+        packs = [sum([
+            [tri[1], tri[1][:1]+str(int(tri[1][1:])-1), tri[1][:1]+str(int(tri[1][1:])+1)] if tri[0] == 'CHI' else
+            [tri[1]]*3 if tri[0] == 'PENG' else
+            [tri[1]]*4 if tri[1] != 'CONCEALED' else []
+            for tri in packs[i]
+        ], list()) for i in range(4)]
+        # print(packs)
+                
+        for i, tile_list in enumerate(packs):
+            d = defaultdict(int)
+            for tile in tile_list:
+                d[tile] += 1
+            for tile in d:
+                self.obs[self.OFFSET_OBS['HALF_FLUSH'] + 4*i : self.OFFSET_OBS['HALF_FLUSH'] + 4*i + d[tile], self.OFFSET_TILE[tile]] = 1       
     
+    # 算算番够不够
     def _check_mahjong(self, winTile, isSelfDrawn = False, isAboutKong = False):
         try:
             fans = MahjongFanCalculator(

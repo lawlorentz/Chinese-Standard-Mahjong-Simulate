@@ -23,8 +23,8 @@ class MahjongGBDataset(Dataset):
             t += a
         self.cache = {'obs': [], 'mask': [], 'act': []}
         for i in range(self.matches):
-            if i % 128 == 0: print('loading', i)
-            d = np.load('data/%d.npz' % (i + self.begin))
+            if i % 1024 == 0: print('loading', i)
+            d = np.load('data/cooked_data_without0/%d.npz' % (i + self.begin))
             for k in d:
                 self.cache[k].append(d[k])
     
