@@ -17,7 +17,7 @@ class FeatureAgent(MahjongGBAgent):
         pass1+hu1+discard34+chi63(3*7*3)+peng34+gang34+angang34+bugang34
     '''
     
-    OBS_SIZE = 38
+    OBS_SIZE = 38-16+48
     ACT_SIZE = 235
     
     OFFSET_OBS = {
@@ -27,7 +27,11 @@ class FeatureAgent(MahjongGBAgent):
         # 每个位置的弃牌
         'DISCARD' : 6,
         # 每个位置的副露
-        'HALF_FLUSH' : 22
+        'HALF_FLUSH' : 22,
+        'CHI':22,
+        'PENG':38,
+        'GANG':54
+
     }
     # 给每种动作编了号
     OFFSET_ACT = {
@@ -352,20 +356,40 @@ class FeatureAgent(MahjongGBAgent):
                 self.obs[self.OFFSET_OBS['DISCARD'] + 4*i : self.OFFSET_OBS['DISCARD'] + 4*i + d[tile], self.OFFSET_TILE[tile]] = 1
         ################################
         packs = self.packs
-        packs = [sum([
-            [tri[1], tri[1][:1]+str(int(tri[1][1:])-1), tri[1][:1]+str(int(tri[1][1:])+1)] if tri[0] == 'CHI' else
-            [tri[1]]*3 if tri[0] == 'PENG' else
-            [tri[1]]*4 if tri[1] != 'CONCEALED' else []
-            for tri in packs[i]
-        ], list()) for i in range(4)]
-        # print(packs)
+        # print(f'self.packs: {self.packs}\n')
+        
+        ################################
+        #分拆吃碰杠
+        for i in range(4):
+            for tri in packs[i]:
+                d=defaultdict(int)
+                if tri[0] == 'CHI':
+                    # [tri[1], tri[1][:1]+str(int(tri[1][1:])-1), tri[1][:1]+str(int(tri[1][1:])+1)]
+                    self.obs[self.OFFSET_OBS['CHI']+12*i+d['CHI'],self.OFFSET_TILE[tri[1]]-1:self.OFFSET_TILE[tri[1]]+2]=1
+                    d['CHI']+=1
+                elif tri[0] == 'PENG':
+                    self.obs[self.OFFSET_OBS['PENG']+12*i:self.OFFSET_OBS['PENG']+12*i+3,self.OFFSET_TILE[tri[1]]]=1
+                elif tri[1] != 'CONCEALED':
+                    self.obs[self.OFFSET_OBS['GANG']+12*i:self.OFFSET_OBS['PENG']+12*i+4,self.OFFSET_TILE[tri[1]]]=1
+                    
+
+
+
+        # packs = [sum([
+        #     [tri[1], tri[1][:1]+str(int(tri[1][1:])-1), tri[1][:1]+str(int(tri[1][1:])+1)] if tri[0] == 'CHI' else
+        #     [tri[1]]*3 if tri[0] == 'PENG' else
+        #     [tri[1]]*4 if tri[1] != 'CONCEALED' else []
+        #     for tri in packs[i]
+        # ], list()) for i in range(4)]
+
+        # print(f'packs: {packs}\n')
                 
-        for i, tile_list in enumerate(packs):
-            d = defaultdict(int)
-            for tile in tile_list:
-                d[tile] += 1
-            for tile in d:
-                self.obs[self.OFFSET_OBS['HALF_FLUSH'] + 4*i : self.OFFSET_OBS['HALF_FLUSH'] + 4*i + d[tile], self.OFFSET_TILE[tile]] = 1       
+        # for i, tile_list in enumerate(packs):
+        #     d = defaultdict(int)
+        #     for tile in tile_list:
+        #         d[tile] += 1
+        #     for tile in d:
+        #         self.obs[self.OFFSET_OBS['HALF_FLUSH'] + 4*i : self.OFFSET_OBS['HALF_FLUSH'] + 4*i + d[tile], self.OFFSET_TILE[tile]] = 1       
     
     # 算算番够不够
     def _check_mahjong(self, winTile, isSelfDrawn = False, isAboutKong = False):
