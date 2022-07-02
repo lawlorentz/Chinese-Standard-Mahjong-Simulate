@@ -2,6 +2,7 @@ from email.policy import default
 from agent import MahjongGBAgent
 from collections import defaultdict
 import numpy as np
+from MahjongGB import MahjongFanCalculator,MahjongShanten
 
 try:
     from MahjongGB import MahjongFanCalculator
@@ -17,7 +18,7 @@ class FeatureAgent(MahjongGBAgent):
         pass1+hu1+discard34+chi63(3*7*3)+peng34+gang34+angang34+bugang34
     '''
     
-    OBS_SIZE = 38-16+48
+    OBS_SIZE = 38-16+48+1
     ACT_SIZE = 235
     
     OFFSET_OBS = {
@@ -30,9 +31,9 @@ class FeatureAgent(MahjongGBAgent):
         'HALF_FLUSH' : 22,
         'CHI':22,
         'PENG':38,
-        'GANG':54
-
-    }
+        'GANG':54,
+        'SHANTEN':70
+            }
     # 给每种动作编了号
     OFFSET_ACT = {
         'Pass' : 0,
@@ -371,9 +372,15 @@ class FeatureAgent(MahjongGBAgent):
                     self.obs[self.OFFSET_OBS['PENG']+12*i:self.OFFSET_OBS['PENG']+12*i+3,self.OFFSET_TILE[tri[1]]]=1
                 elif tri[1] != 'CONCEALED':
                     self.obs[self.OFFSET_OBS['GANG']+12*i:self.OFFSET_OBS['PENG']+12*i+4,self.OFFSET_TILE[tri[1]]]=1
-                    
-
-
+        ################################
+        # 向听
+        print(tuple(self.packs[0]))
+        print(tuple(self.hand))
+        if(3*len(self.packs[0])+len(self.hand)>=14):
+            shanten=0
+        else:
+            shanten = MahjongShanten(pack = tuple(self.packs[0]),hand = tuple(self.hand))            
+        self.obs[self.OFFSET_OBS['SHANTEN'],shanten]=1
 
         # packs = [sum([
         #     [tri[1], tri[1][:1]+str(int(tri[1][1:])-1), tri[1][:1]+str(int(tri[1][1:])+1)] if tri[0] == 'CHI' else
