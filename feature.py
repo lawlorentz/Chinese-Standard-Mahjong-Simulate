@@ -374,13 +374,25 @@ class FeatureAgent(MahjongGBAgent):
                     self.obs[self.OFFSET_OBS['GANG']+12*i:self.OFFSET_OBS['PENG']+12*i+4,self.OFFSET_TILE[tri[1]]]=1
         ################################
         # 向听
-        print(tuple(self.packs[0]))
-        print(tuple(self.hand))
+        # print(tuple(self.packs[0]))
+        # print(tuple(self.hand))
+        
+        shanten=0
         if(3*len(self.packs[0])+len(self.hand)>=14):
-            shanten=0
+            shanten=6
+            for t in self.hand:
+                h=self.hand.copy()
+                h.remove(t)
+                # print(f'self.hand:{self.hand}')
+                # print(f'h        :{h}')
+                shanten=min(shanten,MahjongShanten(pack = tuple(self.packs[0]),hand = tuple(h)))
+                # print(shanten)
+            
         else:
             shanten = MahjongShanten(pack = tuple(self.packs[0]),hand = tuple(self.hand))            
         self.obs[self.OFFSET_OBS['SHANTEN'],shanten]=1
+        # print(shanten)
+        #################################
 
         # packs = [sum([
         #     [tri[1], tri[1][:1]+str(int(tri[1][1:])-1), tri[1][:1]+str(int(tri[1][1:])+1)] if tri[0] == 'CHI' else
