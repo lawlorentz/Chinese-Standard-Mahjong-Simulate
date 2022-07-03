@@ -1,9 +1,8 @@
-# 饼万条互换 19,28,37,46互换
-
+# 饼万条互换
 import numpy as np
 import json
 
-feature_num=38
+feature_num=70
 
 with open('data/count.json') as f:
     match_samples = json.load(f)

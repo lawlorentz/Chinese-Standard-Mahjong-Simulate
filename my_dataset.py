@@ -1,13 +1,15 @@
 from torch.utils.data import Dataset
 import numpy as np
 from bisect import bisect_right
-feature_num = 38
+feature_num = 70
 class MahjongGBDataset(Dataset):
     
     def __init__(self, begin = 0, end = 1, augment = False):
         import json
         with open('data/count.json') as f:
             self.match_samples = json.load(f)
+        if augment:
+            self.match_samples=[x*6 for x in self.match_samples]
         self.total_matches = len(self.match_samples)
         self.total_samples = sum(self.match_samples)
         self.begin = int(begin * self.total_matches)
@@ -28,6 +30,7 @@ class MahjongGBDataset(Dataset):
                 d = np.load('data/cooked_data_without0/%d_augmented_%d.npz' % (i + self.begin,feature_num))
             else:
                 d = np.load('data/cooked_data_without0/%d.npz' % (i + self.begin))
+                
             for k in d:
                 self.cache[k].append(d[k])
     

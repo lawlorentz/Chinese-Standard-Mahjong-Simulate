@@ -1,0 +1,4 @@
+cp -r /code/* /workspace && cp /dataset/* /workspace/data && cd /workspace 
+python preprocess.py && python supervised.py
+查看内存：top
+查看磁盘：watch -n 5 df -lh
