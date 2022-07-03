@@ -49,13 +49,13 @@ class CNNModel(nn.Module):
         )
 
         self.body_up = nn.Sequential(
-            *(Bottleneck(128) for _ in range(6)),
+            *(Bottleneck(128) for _ in range(4)),
         )
         self.body_down = nn.Sequential(
-            *(Bottleneck1D(128,128,128) for _ in range(6)),
+            *(Bottleneck1D(128,128,128) for _ in range(4)),
         )
         self.body_total = nn.Sequential(
-            *(Bottleneck(128) for _ in range(12)),
+            *(Bottleneck(128) for _ in range(8)),
         )
         self.foot = nn.Sequential(
             nn.Linear(128*4*7+1, 1024),
@@ -73,7 +73,8 @@ class CNNModel(nn.Module):
         x_up=x[:,:-1,:3,:]
         x_down=x[:,:-1,3,:7]
         x_xiangting=torch.squeeze(x[:,-1,0,:7])
-        x_xiangting=torch.nonzero(x_xiangting)[:,1]
+        ## ???? x_xiangting=torch.nonzero(x_xiangting)[:,1]
+        x_xiangting=torch.nonzero(x_xiangting)[:,0]
         x_xiangting=x_xiangting.unsqueeze(1)
         
         x_up=self.conv_up(x_up)

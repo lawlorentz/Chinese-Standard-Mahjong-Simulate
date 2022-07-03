@@ -1,4 +1,4 @@
-cp -r /code/* /workspace && cp /dataset/* /workspace/data && cd /workspace 
-python preprocess.py && python supervised.py
+cp -r /code/* /workspace && cp /dataset/data/* /workspace/data && cd /workspace 
+python preprocess.py && python data_augment.py && python my_supervised_cnnmodel.py
 查看内存：top
 查看磁盘：watch -n 5 df -lh

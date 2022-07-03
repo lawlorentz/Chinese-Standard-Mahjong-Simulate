@@ -34,9 +34,9 @@ if __name__ == '__main__':
         
 
     # Load model
-    # data_dir='/code/log/checkpoint_34_1656597631/14.pkl'
+    data_dir='/code/log/checkpoint_CNNModel_1656844401/0.pkl'
     model = new_model_try.CNNModel().to('cuda')
-    # model.load_state_dict(torch.load(data_dir))
+    model.load_state_dict(torch.load(data_dir))
     
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
@@ -57,20 +57,32 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        
+            
+            if i%1024==0:
+                print('Run validation:')
+                correct = 0
+                for i, d in enumerate(vloader):
+                    input_dict = {'is_training': False, 'obs': {'observation': d[0].cuda(), 'action_mask': d[1].cuda()}}
+                    with torch.no_grad():
+                        logits = model(input_dict)
+                        pred = logits.argmax(dim = 1)
+                        correct += torch.eq(pred, d[2].cuda()).sum().item()
+                acc = correct / len(validateDataset)
+                print('Epoch', e + 1, 'Validate acc:', acc)
+                scheduler.step(acc)
         torch.save(model.module.state_dict(), logdir + f'checkpoint_CNNModel_{timestamp}/{e}.pkl')
         print(logdir + f'checkpoint_CNNModel_{timestamp}/{e}.pkl saved')
-        print('Run validation:')
         
-        correct = 0
-        for i, d in enumerate(vloader):
-            input_dict = {'is_training': False, 'obs': {'observation': d[0].cuda(), 'action_mask': d[1].cuda()}}
-            with torch.no_grad():
-                logits = model(input_dict)
-                pred = logits.argmax(dim = 1)
-                correct += torch.eq(pred, d[2].cuda()).sum().item()
-        acc = correct / len(validateDataset)
-        print('Epoch', e + 1, 'Validate acc:', acc)
-        scheduler.step(acc)
-        log_writer.add_scalar('Accuracy/valid', float(acc), e)
+        
+        # correct = 0
+        # for i, d in enumerate(vloader):
+        #     input_dict = {'is_training': False, 'obs': {'observation': d[0].cuda(), 'action_mask': d[1].cuda()}}
+        #     with torch.no_grad():
+        #         logits = model(input_dict)
+        #         pred = logits.argmax(dim = 1)
+        #         correct += torch.eq(pred, d[2].cuda()).sum().item()
+        # acc = correct / len(validateDataset)
+        # print('Epoch', e + 1, 'Validate acc:', acc)
+        # scheduler.step(acc)
+        # log_writer.add_scalar('Accuracy/valid', float(acc), e)
         
