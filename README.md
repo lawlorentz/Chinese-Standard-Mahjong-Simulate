@@ -5,6 +5,8 @@
 根据[比赛](https://botzone.org.cn/static/gamecontest2022a_cn.html)所给的强AI对局数据，使用监督学习训练出一个AI。
 
 <!-- PROJECT SHIELDS -->
+## 配置
+需要安装算番库[PyMahjongGB](https://github.com/ailab-pku/PyMahjongGB)
 
 ## 介绍
 `data`中：
