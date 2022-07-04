@@ -1,8 +1,7 @@
-
-
 # 基于监督学习的国标麻将AI
 
-根据[比赛](https://botzone.org.cn/static/gamecontest2022a_cn.html)所给的强AI对局数据，使用监督学习训练出一个AI。
+根据[比赛](https://botzone.org.cn/static/gamecontest2022a_cn.html)所给的强AI对局数据，使用监督学习训练出一个AI。最终取得[IJCAI 2022 麻将人工智能比赛](https://botzone.org.cn/static/gamecontest2022a_cn.html)第二名。
+![](results.png)
 
 <!-- PROJECT SHIELDS -->
 ## 配置
