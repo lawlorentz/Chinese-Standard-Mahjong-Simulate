@@ -12,6 +12,8 @@
 - `sample.txt`是样例数据，完整数据可从[这里](https://disk.pku.edu.cn:443/link/50B0147C4D98B2CF393B3AF1ADF53FBE
 )下载，提取码`87Ok` 
 - `3.pkl`是一个用`my_supervised_cnnmodel`训练好的模型，验证集上正确率 $86.9\%$
+
+
 `new_model_try.py`中是使用的$resnet$模型
 `feature.py`定义71维feature：
 ```python
