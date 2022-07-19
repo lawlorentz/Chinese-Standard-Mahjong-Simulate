@@ -49,10 +49,4 @@ python my_supervised_cnnmodel.py
 - [对局示例](https://botzone.org.cn/match/62c1c274b0a3930a9c03ed79)：
 ![](match_sample.png)
 
-
-
-
-
-
-
-
+- 天梯排名：![](board.png)

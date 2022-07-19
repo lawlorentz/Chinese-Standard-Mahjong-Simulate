@@ -72,6 +72,7 @@ class CNNModel(nn.Module):
         x = obs
         x_up=x[:,:-1,:3,:]
         x_down=x[:,:-1,3,:7]
+        # squeeze对数据的维度进行压缩
         x_xiangting=torch.squeeze(x[:,-1,0,:7])
         ## ???? x_xiangting=torch.nonzero(x_xiangting)[:,1]
         x_xiangting=torch.nonzero(x_xiangting)[:,0]
